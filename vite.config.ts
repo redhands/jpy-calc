@@ -1,10 +1,17 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: '/jpy-calc/', // GitHub Pages 저장소 이름
   server: {
-    host: '0.0.0.0', // 모든 네트워크 인터페이스 허용 (192.168.0.142 접속 가능)
+    host: '0.0.0.0', // 내부 네트워크 접속 허용
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.ts',
   },
 })

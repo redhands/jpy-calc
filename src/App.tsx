@@ -10,7 +10,7 @@ const API_URL = 'https://open.er-api.com/v6/latest/JPY';
 
 // --- Custom Hook ---
 const useExchangeRate = () => {
-  const [rate, setRate] = useState<number>(9.0); // Fallback rate
+  const [rate, setRate] = useState<number>(9.0); // Fallback rate (KRW per 1 JPY)
   const [loading, setLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<string>('');
@@ -59,7 +59,7 @@ const RateBadge = memo(({ rate, isRefreshing, lastUpdated, onRefresh }: {
       onClick={onRefresh}
       title={`마지막 갱신: ${lastUpdated}`}
     >
-      1 ¥ = {rate.toFixed(2)} ₩ {isRefreshing ? '⌛' : ''}
+      ¥ 100 = ₩ {(rate * 100).toFixed(2)} {isRefreshing ? '⌛' : ''}
     </span>
   </div>
 ));
@@ -73,6 +73,7 @@ const JpyInput = memo(({ value, isTaxIncluded, onChange, onFocus }: {
         {isTaxIncluded ? '세금 포함 금액' : '세전 금액(면세가)'}
       </label>
       <div className="input-control">
+        <span className="unit-symbol">¥</span>
         <input
           id="jpy-input"
           type="text"
@@ -83,7 +84,6 @@ const JpyInput = memo(({ value, isTaxIncluded, onChange, onFocus }: {
           placeholder="0"
           autoFocus
         />
-        <span className="unit-symbol">¥</span>
       </div>
     </div>
   </div>
@@ -114,7 +114,6 @@ function App() {
     const val = e.target.value.replace(/[^0-9]/g, '');
     const numVal = parseInt(val) || 0;
     
-    // 최대 7자리 (9,999,999엔)로 제한
     if (val.length <= 7 && numVal <= 9999999) {
       setJpy(val);
     }
@@ -207,7 +206,7 @@ function App() {
         <div className="result-section">
           <div className="result-item">
             <span>{isDutyFreeEligible ? '면세 적용 가격' : '엔화 가격'}</span>
-            <span className="jpy-result">{KR_FORMATTER.format(finalJpy)} ¥</span>
+            <span className="jpy-result">¥ {KR_FORMATTER.format(finalJpy)}</span>
           </div>
           
           <div className="result-item highlight clickable" onClick={handleCopy}>
@@ -216,14 +215,14 @@ function App() {
               {copied && <span className="copy-badge">복사됨!</span>}
             </div>
             <div className="krw-container">
-              <span className="krw-result">{KR_FORMATTER.format(krwAmount)}</span>
               <span className="unit-symbol">₩</span>
+              <span className="krw-result">{KR_FORMATTER.format(krwAmount)}</span>
             </div>
           </div>
           
           <div className="warning-area">
-            {isBelowThreshold && <span className="warning-box">5,000 ¥ 미만 면세 불가</span>}
-            {isAboveLimit && <span className="warning-box danger">500,000 ¥ 초과 면세 불가</span>}
+            {isBelowThreshold && <span className="warning-box">¥ 5,000 미만 면세 불가</span>}
+            {isAboveLimit && <span className="warning-box danger">¥ 500,000 초과 면세 불가</span>}
           </div>
         </div>
       </main>
