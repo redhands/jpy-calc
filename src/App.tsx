@@ -27,14 +27,12 @@ const useExchangeRate = () => {
       }
     } catch (error) {
       console.error('Failed to fetch rate:', error);
-      if (!lastUpdated) {
-        setLastUpdated('오류 (기본 환율 적용)');
-      }
+      setLastUpdated(prev => prev || '오류 (기본 환율 적용)');
     } finally {
       setLoading(false);
       setIsRefreshing(false);
     }
-  }, [lastUpdated]);
+  }, []);
 
   useEffect(() => {
     fetchRate();
@@ -102,6 +100,32 @@ const ToggleGroup = memo(({ isTaxIncluded, onToggle }: {
   </div>
 ));
 
+// --- Utilities ---
+const copyToClipboard = async (text: string) => {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } else {
+      // Fallback: execCommand
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.style.top = "0";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return successful;
+    }
+  } catch (err) {
+    console.error('Copy failed:', err);
+    return false;
+  }
+};
+
 // --- Main App ---
 function App() {
   const [jpy, setJpy] = useState<string>('10000');
@@ -142,34 +166,7 @@ function App() {
 
   const handleCopy = useCallback(() => {
     if (krwAmount > 0) {
-      const textToCopy = krwAmount.toString();
-      
-      const copyToClipboard = async () => {
-        try {
-          if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(textToCopy);
-            return true;
-          } else {
-            // Fallback: execCommand
-            const textArea = document.createElement("textarea");
-            textArea.value = textToCopy;
-            textArea.style.position = "fixed";
-            textArea.style.left = "-9999px";
-            textArea.style.top = "0";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            const successful = document.execCommand('copy');
-            document.body.removeChild(textArea);
-            return successful;
-          }
-        } catch (err) {
-          console.error('Copy failed:', err);
-          return false;
-        }
-      };
-
-      copyToClipboard().then((success) => {
+      copyToClipboard(krwAmount.toString()).then((success) => {
         if (success) {
           setCopied(true);
           setTimeout(() => setCopied(false), 1500);

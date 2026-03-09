@@ -3,12 +3,13 @@ import App from './App';
 import { expect, vi, describe, it, beforeEach } from 'vitest';
 
 // Mock the exchange rate API
-global.fetch = vi.fn();
+const mockFetch = vi.fn();
+vi.stubGlobal('fetch', mockFetch);
 
 describe('App', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (global.fetch as any).mockResolvedValue({
+    mockFetch.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({
         result: 'success',
